@@ -5,12 +5,16 @@
 import { useState, useTransition } from "react";
 import {
   acceptIssueAction,
+  approveCustomsPackageAction,
   approveDraftAction,
   approveQuarantinePackageAction,
+  archiveShipmentAction,
+  arrangeDeliveryAction,
   confirmFieldAction,
   correctFieldAction,
   escalateIssueAction,
   generateSupplierEmailAction,
+  markDeliveredAction,
   proceedToQuarantineAction,
   rejectDraftAction,
   resolveApprovalAction,
@@ -143,6 +147,34 @@ export function ApproveQuarantineButton({ shipmentId }: { shipmentId: string }) 
       onClick={() => startTransition(() => approveQuarantinePackageAction(shipmentId))}
     >
       検疫提出資料を承認する
+    </button>
+  );
+}
+
+/** 状態に応じた後工程ボタン（税関承認〜保存） */
+export function AdvanceButton({
+  shipmentId,
+  status,
+}: {
+  shipmentId: string;
+  status: string;
+}) {
+  const [pending, startTransition] = useTransition();
+  const config: Record<string, { label: string; action: (id: string) => Promise<void> }> = {
+    CUSTOMS_APPROVAL_REQUIRED: { label: "税関申告資料を承認する", action: approveCustomsPackageAction },
+    IMPORT_PERMITTED: { label: "納品を手配する", action: arrangeDeliveryAction },
+    DELIVERY_ARRANGED: { label: "納品完了にする", action: markDeliveredAction },
+    DELIVERED: { label: "案件を保存（アーカイブ）", action: archiveShipmentAction },
+  };
+  const c = config[status];
+  if (!c) return null;
+  return (
+    <button
+      disabled={pending}
+      className={`${btn} bg-emerald-700 text-white hover:bg-emerald-600`}
+      onClick={() => startTransition(() => c.action(shipmentId))}
+    >
+      {c.label}
     </button>
   );
 }

@@ -98,6 +98,27 @@ async function main() {
   ]);
   await fs.writeFile(path.join(OUT_DIR, "Packing_List_VN-JP-001.pdf"), packingList);
 
+  // 修正版デモ用: 重量を10,000 kgに修正した改訂版Packing List
+  const packingListRevised = await createDocumentPdf("PACKING LIST (REVISED)", [
+    { text: "Ref. Invoice No.: ABC-INV-2026-0712", bold: true },
+    { text: "Date: July 14, 2026 (Revised)" },
+    { text: "Shipper: ABC Seafood Co., Ltd.", gapBefore: 10 },
+    { text: "Consignee: Nihon Suisan Trading K.K." },
+    { text: "Commodity: Frozen Vannamei Shrimp", gapBefore: 14, bold: true },
+    { text: "Country of Origin: Vietnam" },
+    { text: "Number of Packages: 500 cartons" },
+    { text: "Total: 500 cartons" },
+    { text: "Total Net Weight: 10,000 kg", bold: true },
+    { text: "Total Gross Weight: 10,500 kg" },
+    { text: "Container No.: TEMU1234567", gapBefore: 10 },
+    { text: "Seal No.: VN998877" },
+    { text: "Remark: Net weight corrected from previous version.", gapBefore: 10 },
+  ]);
+  await fs.writeFile(
+    path.join(OUT_DIR, "Packing_List_VN-JP-001_revised.pdf"),
+    packingListRevised
+  );
+
   const bl = await createDocumentPdf("BILL OF LADING", [
     { text: "B/L No.: OCEA-VNJP-556677", bold: true },
     { text: "Shipper: ABC Seafood Co., Ltd.", gapBefore: 10 },

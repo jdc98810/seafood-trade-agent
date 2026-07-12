@@ -46,14 +46,25 @@ Strict rules:
 
 Output JSON: {"documentType": "...", "fields": [{"fieldName": "...", "originalValue": "...", "pageNumber": 1, "evidenceText": "...", "confidence": 0.97}]}`;
 
-async function loadFixture(documentType: DocumentType): Promise<ExtractionResult | null> {
-  try {
-    const p = path.join(process.cwd(), "fixtures", "extraction", `${documentType}.json`);
-    const raw = await fs.readFile(p, "utf-8");
-    return extractionSchema.parse(JSON.parse(raw)) as ExtractionResult;
-  } catch {
-    return null;
+async function loadFixture(
+  documentType: DocumentType,
+  fileName: string
+): Promise<ExtractionResult | null> {
+  // デモ用: ファイル名に revised / corrected 等が含まれる場合は修正版fixtureを優先する
+  const isRevised = /revised|corrected|rev\d|v2|修正/i.test(fileName);
+  const candidates = isRevised
+    ? [`${documentType}_REVISED.json`, `${documentType}.json`]
+    : [`${documentType}.json`];
+  for (const name of candidates) {
+    try {
+      const p = path.join(process.cwd(), "fixtures", "extraction", name);
+      const raw = await fs.readFile(p, "utf-8");
+      return extractionSchema.parse(JSON.parse(raw)) as ExtractionResult;
+    } catch {
+      // 次の候補へ
+    }
   }
+  return null;
 }
 
 /** PDFからページ区切り付きテキストを取り出す */
@@ -75,7 +86,7 @@ export async function extractDocument(
   if (isDemoMode()) {
     const type = classifyByFileName(fileName) ?? "OTHER";
     if (type !== "OTHER") {
-      const fixture = await loadFixture(type);
+      const fixture = await loadFixture(type, fileName);
       if (fixture) return fixture;
     }
     return { documentType: type, fields: [] };

@@ -238,6 +238,39 @@ export async function approveQuarantinePackageAction(shipmentId: string): Promis
   await transitionShipment(shipmentId, "READY_FOR_CUSTOMS_PREPARATION", ACTOR, "検疫提出資料を承認しました。");
   await transitionShipment(shipmentId, "CUSTOMS_PACKAGE_READY", "agent", "税関・通関業者向け資料を生成しました。");
   await transitionShipment(shipmentId, "CUSTOMS_APPROVAL_REQUIRED", "agent", "税関申告資料の人間承認をお願いします。");
+  await prisma.approvalRequest.create({
+    data: {
+      shipmentId,
+      approvalType: "SUBMISSION_PACKAGE",
+      title: "税関・通関業者向け申告資料の承認",
+      priority: "NORMAL",
+    },
+  });
+  refresh(shipmentId);
+}
+
+/** 税関資料承認 → 輸入許可（実際の申告は通関業者経由で人間が行う） */
+export async function approveCustomsPackageAction(shipmentId: string): Promise<void> {
+  await prisma.approvalRequest.updateMany({
+    where: { shipmentId, approvalType: "SUBMISSION_PACKAGE", status: "PENDING" },
+    data: { status: "APPROVED", reviewedBy: ACTOR, reviewedAt: new Date() },
+  });
+  await transitionShipment(shipmentId, "IMPORT_PERMITTED", ACTOR, "税関申告資料を承認。輸入許可を確認しました。");
+  refresh(shipmentId);
+}
+
+export async function arrangeDeliveryAction(shipmentId: string): Promise<void> {
+  await transitionShipment(shipmentId, "DELIVERY_ARRANGED", ACTOR, "コンテナ引取り・納品を手配しました。");
+  refresh(shipmentId);
+}
+
+export async function markDeliveredAction(shipmentId: string): Promise<void> {
+  await transitionShipment(shipmentId, "DELIVERED", ACTOR, "納品が完了しました。");
+  refresh(shipmentId);
+}
+
+export async function archiveShipmentAction(shipmentId: string): Promise<void> {
+  await transitionShipment(shipmentId, "ARCHIVED", ACTOR, "案件を保存（アーカイブ）しました。");
   refresh(shipmentId);
 }
 

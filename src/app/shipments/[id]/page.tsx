@@ -12,6 +12,7 @@ import {
 import { ConfidenceBadge, SeverityBadge, StatusBadge, UrgencyBadge } from "@/components/badges";
 import { UploadForm } from "@/components/upload-form";
 import {
+  AdvanceButton,
   ApproveQuarantineButton,
   DraftActions,
   FieldActions,
@@ -238,6 +239,7 @@ export default async function ShipmentDetailPage({
                   {shipment.status === "QUARANTINE_APPROVAL_REQUIRED" && (
                     <ApproveQuarantineButton shipmentId={shipment.id} />
                   )}
+                  <AdvanceButton shipmentId={shipment.id} status={shipment.status} />
                 </>
               )}
               {[

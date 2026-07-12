@@ -1,0 +1,16 @@
+{
+  "documentType": "PACKING_LIST",
+  "fields": [
+    { "fieldName": "productName", "originalValue": "Frozen Vannamei Shrimp", "pageNumber": 1, "evidenceText": "Commodity: Frozen Vannamei Shrimp", "confidence": 0.96 },
+    { "fieldName": "exporter", "originalValue": "ABC Seafood Co., Ltd.", "pageNumber": 1, "evidenceText": "Shipper: ABC Seafood Co., Ltd.", "confidence": 0.96 },
+    { "fieldName": "importer", "originalValue": "Nihon Suisan Trading K.K.", "pageNumber": 1, "evidenceText": "Consignee: Nihon Suisan Trading K.K.", "confidence": 0.96 },
+    { "fieldName": "quantity", "originalValue": "500 cartons", "pageNumber": 1, "evidenceText": "Total: 500 cartons", "confidence": 0.96 },
+    { "fieldName": "packageCount", "originalValue": "500", "pageNumber": 1, "evidenceText": "Number of Packages: 500 cartons", "confidence": 0.96 },
+    { "fieldName": "netWeightKg", "originalValue": "10,000 kg", "pageNumber": 1, "evidenceText": "Total Net Weight: 10,000 kg (revised)", "confidence": 0.97 },
+    { "fieldName": "grossWeightKg", "originalValue": "10,500 kg", "pageNumber": 1, "evidenceText": "Total Gross Weight: 10,500 kg", "confidence": 0.96 },
+    { "fieldName": "originCountry", "originalValue": "Vietnam", "pageNumber": 1, "evidenceText": "Country of Origin: Vietnam", "confidence": 0.95 },
+    { "fieldName": "containerNo", "originalValue": "TEMU1234567", "pageNumber": 1, "evidenceText": "Container No.: TEMU1234567", "confidence": 0.97 },
+    { "fieldName": "sealNo", "originalValue": "VN998877", "pageNumber": 1, "evidenceText": "Seal No.: VN998877", "confidence": 0.96 },
+    { "fieldName": "invoiceNo", "originalValue": "ABC-INV-2026-0712", "pageNumber": 1, "evidenceText": "Ref. Invoice No.: ABC-INV-2026-0712", "confidence": 0.95 }
+  ]
+}

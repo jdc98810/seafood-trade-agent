@@ -1,7 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  // 開発ツールのフローティングインジケーターを非表示（デモ・スクリーンショット用）
+  devIndicators: false,
 };
 
 export default nextConfig;

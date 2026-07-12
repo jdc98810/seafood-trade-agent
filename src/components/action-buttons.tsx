@@ -22,7 +22,7 @@ import {
 } from "@/lib/actions";
 
 const btn =
-  "rounded px-2 py-1 text-xs font-medium disabled:opacity-50 transition-colors cursor-pointer";
+  "rounded px-2 py-1 text-xs font-medium disabled:opacity-50 transition-colors cursor-pointer whitespace-nowrap";
 
 export function FieldActions({ fieldId, current }: { fieldId: string; current: string | null }) {
   const [pending, startTransition] = useTransition();

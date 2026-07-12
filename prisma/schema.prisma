@@ -1,0 +1,134 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+// 案件（1つの輸入Shipment）
+model Shipment {
+  id                 String   @id // e.g. "VN-JP-001"
+  route              String // e.g. "Vietnam → Japan"
+  product            String
+  scientificName     String?
+  purpose            String?
+  transport          String?
+  quantity           String?
+  expectedNetWeight  String?
+  containerNo        String?
+  sealNo             String?
+  etd                DateTime?
+  eta                DateTime?
+  transportCondition String?
+  status             String // WorkflowState
+  urgency            String   @default("NORMAL") // HIGH / NORMAL / LOW
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  documents         TradeDocument[]
+  issues            ValidationIssue[]
+  requiredDocuments RequiredDocument[]
+  approvalRequests  ApprovalRequest[]
+  drafts            CommunicationDraft[]
+  events            WorkflowEvent[]
+}
+
+// 受領した書類（バージョン管理付き）
+model TradeDocument {
+  id               String   @id @default(cuid())
+  shipmentId       String
+  shipment         Shipment @relation(fields: [shipmentId], references: [id])
+  documentType     String // COMMERCIAL_INVOICE / PACKING_LIST / BILL_OF_LADING / HEALTH_CERTIFICATE / CERTIFICATE_OF_ORIGIN / OTHER
+  fileName         String
+  filePath         String?
+  version          Int      @default(1)
+  isActive         Boolean  @default(true) // 現在の有効版か
+  isFinal          Boolean  @default(true) // Draft / Final
+  uploadedAt       DateTime @default(now())
+  extractionStatus String   @default("PENDING") // PENDING / IN_PROGRESS / COMPLETE / FAILED
+
+  fields ExtractedField[]
+}
+
+// 抽出値（根拠付き、推測禁止）
+model ExtractedField {
+  id              String        @id @default(cuid())
+  documentId      String
+  document        TradeDocument @relation(fields: [documentId], references: [id])
+  fieldName       String
+  originalValue   String?
+  normalizedValue String?
+  pageNumber      Int?
+  evidenceText    String?
+  confidence      Float?
+  reviewStatus    String        @default("UNREVIEWED") // UNREVIEWED / CONFIRMED / CORRECTED
+}
+
+// Validation Agent が検出した問題
+model ValidationIssue {
+  id                String   @id @default(cuid())
+  shipmentId        String
+  shipment          Shipment @relation(fields: [shipmentId], references: [id])
+  issueType         String // MISMATCH / MISSING_DOCUMENT / MISSING_FIELD / PLAUSIBILITY / INSUFFICIENT_EVIDENCE
+  severity          String // RED / YELLOW / GREEN
+  fieldName         String?
+  description       String
+  sourceValues      String? // JSON: [{documentType, value}]
+  recommendedAction String?
+  status            String   @default("OPEN") // OPEN / RESOLVED / ACCEPTED / ESCALATED
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+// ルート別必要書類チェックリスト
+model RequiredDocument {
+  id                String   @id @default(cuid())
+  shipmentId        String
+  shipment          Shipment @relation(fields: [shipmentId], references: [id])
+  documentType      String
+  requirementReason String?
+  status            String   @default("MISSING") // MISSING / RECEIVED / WAIVED
+  confidence        Float?
+  humanConfirmed    Boolean  @default(false)
+}
+
+// 人間承認リクエスト
+model ApprovalRequest {
+  id           String    @id @default(cuid())
+  shipmentId   String
+  shipment     Shipment  @relation(fields: [shipmentId], references: [id])
+  approvalType String // SHIPMENT_BASIC_INFO / SUBMISSION_PACKAGE / EXCEPTION / COMMUNICATION_DRAFT
+  title        String
+  payload      String? // JSON
+  status       String    @default("PENDING") // PENDING / APPROVED / EDITED / ESCALATED
+  priority     String    @default("NORMAL") // HIGH / NORMAL / LOW
+  reviewedBy   String?
+  reviewedAt   DateTime?
+  createdAt    DateTime  @default(now())
+}
+
+// 連絡文草案（承認まで送信されない）
+model CommunicationDraft {
+  id            String   @id @default(cuid())
+  shipmentId    String
+  shipment      Shipment @relation(fields: [shipmentId], references: [id])
+  language      String // en / ja
+  recipientType String // SUPPLIER / CUSTOMER / INTERNAL
+  subject       String
+  body          String
+  status        String   @default("DRAFT") // DRAFT / APPROVED / REJECTED
+  createdAt     DateTime @default(now())
+}
+
+// 状態遷移の監査ログ
+model WorkflowEvent {
+  id         String   @id @default(cuid())
+  shipmentId String
+  shipment   Shipment @relation(fields: [shipmentId], references: [id])
+  fromState  String?
+  toState    String
+  actor      String // "agent" またはユーザー名
+  reason     String?
+  createdAt  DateTime @default(now())
+}

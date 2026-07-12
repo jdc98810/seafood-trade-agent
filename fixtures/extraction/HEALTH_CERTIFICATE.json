@@ -1,0 +1,15 @@
+{
+  "documentType": "HEALTH_CERTIFICATE",
+  "fields": [
+    { "fieldName": "certificateNo", "originalValue": "VN-HC-2026-88231", "pageNumber": 1, "evidenceText": "Certificate No.: VN-HC-2026-88231", "confidence": 0.98 },
+    { "fieldName": "productName", "originalValue": "Frozen Vannamei Shrimp", "pageNumber": 1, "evidenceText": "Product: Frozen Vannamei Shrimp", "confidence": 0.96 },
+    { "fieldName": "scientificName", "originalValue": "Litopenaeus vannamei", "pageNumber": 1, "evidenceText": "Scientific Name: Litopenaeus vannamei", "confidence": 0.97 },
+    { "fieldName": "originCountry", "originalValue": "Vietnam", "pageNumber": 1, "evidenceText": "Country of Origin: Vietnam", "confidence": 0.97 },
+    { "fieldName": "exporter", "originalValue": "ABC Seafood Co., Ltd.", "pageNumber": 1, "evidenceText": "Exporter: ABC Seafood Co., Ltd.", "confidence": 0.96 },
+    { "fieldName": "manufacturer", "originalValue": "ABC Seafood Processing Plant No.2 (Approval No. DL-123)", "pageNumber": 1, "evidenceText": "Processing Establishment: ABC Seafood Processing Plant No.2, Approval No. DL-123", "confidence": 0.94 },
+    { "fieldName": "netWeightKg", "originalValue": "10,000 kg", "pageNumber": 1, "evidenceText": "Net Weight: 10,000 kg", "confidence": 0.96 },
+    { "fieldName": "quantity", "originalValue": "500 cartons", "pageNumber": 1, "evidenceText": "Number of Packages: 500 cartons", "confidence": 0.95 },
+    { "fieldName": "containerNo", "originalValue": "TEMU1234567", "pageNumber": 1, "evidenceText": "Container No.: TEMU1234567", "confidence": 0.95 },
+    { "fieldName": "transportCondition", "originalValue": "Frozen, at -18°C or below", "pageNumber": 1, "evidenceText": "Storage and Transport Condition: Frozen, at -18°C or below", "confidence": 0.94 }
+  ]
+}

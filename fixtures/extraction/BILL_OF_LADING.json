@@ -1,0 +1,18 @@
+{
+  "documentType": "BILL_OF_LADING",
+  "fields": [
+    { "fieldName": "blNo", "originalValue": "OCEA-VNJP-556677", "pageNumber": 1, "evidenceText": "B/L No.: OCEA-VNJP-556677", "confidence": 0.98 },
+    { "fieldName": "productName", "originalValue": "Frozen Shrimp", "pageNumber": 1, "evidenceText": "Description of Goods: Frozen Shrimp, 500 cartons", "confidence": 0.94 },
+    { "fieldName": "exporter", "originalValue": "ABC Seafood Co., Ltd.", "pageNumber": 1, "evidenceText": "Shipper: ABC Seafood Co., Ltd.", "confidence": 0.96 },
+    { "fieldName": "importer", "originalValue": "Nihon Suisan Trading K.K.", "pageNumber": 1, "evidenceText": "Consignee: Nihon Suisan Trading K.K.", "confidence": 0.96 },
+    { "fieldName": "quantity", "originalValue": "500 cartons", "pageNumber": 1, "evidenceText": "No. of Packages: 500 cartons", "confidence": 0.95 },
+    { "fieldName": "grossWeightKg", "originalValue": "10,500 kg", "pageNumber": 1, "evidenceText": "Gross Weight: 10,500 kgs", "confidence": 0.95 },
+    { "fieldName": "containerNo", "originalValue": "TEMU1234567", "pageNumber": 1, "evidenceText": "Container No.: TEMU1234567", "confidence": 0.97 },
+    { "fieldName": "sealNo", "originalValue": "VN998877", "pageNumber": 1, "evidenceText": "Seal No.: VN998877", "confidence": 0.96 },
+    { "fieldName": "vesselName", "originalValue": "OCEAN STAR V.026E", "pageNumber": 1, "evidenceText": "Ocean Vessel: OCEAN STAR V.026E", "confidence": 0.95 },
+    { "fieldName": "portOfLoading", "originalValue": "Ho Chi Minh City, Vietnam", "pageNumber": 1, "evidenceText": "Port of Loading: Ho Chi Minh City, Vietnam", "confidence": 0.96 },
+    { "fieldName": "portOfDischarge", "originalValue": "Tokyo, Japan", "pageNumber": 1, "evidenceText": "Port of Discharge: Tokyo, Japan", "confidence": 0.96 },
+    { "fieldName": "etd", "originalValue": "2026-07-18", "pageNumber": 1, "evidenceText": "Shipped on Board Date: 2026-07-18", "confidence": 0.95 },
+    { "fieldName": "transportCondition", "originalValue": "Frozen / -18°C", "pageNumber": 1, "evidenceText": "Temperature: Maintain at -18°C (Frozen)", "confidence": 0.93 }
+  ]
+}

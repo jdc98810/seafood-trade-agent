@@ -1,0 +1,22 @@
+{
+  "documentType": "COMMERCIAL_INVOICE",
+  "fields": [
+    { "fieldName": "invoiceNo", "originalValue": "ABC-INV-2026-0712", "pageNumber": 1, "evidenceText": "Invoice No.: ABC-INV-2026-0712", "confidence": 0.98 },
+    { "fieldName": "productName", "originalValue": "Frozen Vannamei Shrimp", "pageNumber": 1, "evidenceText": "Description of Goods: Frozen Vannamei Shrimp (HOSO)", "confidence": 0.97 },
+    { "fieldName": "originCountry", "originalValue": "Vietnam", "pageNumber": 1, "evidenceText": "Country of Origin: Vietnam", "confidence": 0.98 },
+    { "fieldName": "exporter", "originalValue": "ABC Seafood Co., Ltd.", "pageNumber": 1, "evidenceText": "Seller: ABC Seafood Co., Ltd., Ho Chi Minh City, Vietnam", "confidence": 0.97 },
+    { "fieldName": "importer", "originalValue": "Nihon Suisan Trading K.K.", "pageNumber": 1, "evidenceText": "Buyer: Nihon Suisan Trading K.K., Tokyo, Japan", "confidence": 0.97 },
+    { "fieldName": "quantity", "originalValue": "500 cartons", "pageNumber": 1, "evidenceText": "Quantity: 500 cartons", "confidence": 0.96 },
+    { "fieldName": "netWeightKg", "originalValue": "10,000 kg", "pageNumber": 1, "evidenceText": "Total Net Weight: 10,000 kg", "confidence": 0.97 },
+    { "fieldName": "grossWeightKg", "originalValue": "10,500 kg", "pageNumber": 1, "evidenceText": "Total Gross Weight: 10,500 kg", "confidence": 0.96 },
+    { "fieldName": "unitPrice", "originalValue": "USD 8.50 / kg", "pageNumber": 1, "evidenceText": "Unit Price: USD 8.50 per kg", "confidence": 0.95 },
+    { "fieldName": "totalAmount", "originalValue": "USD 85,000.00", "pageNumber": 1, "evidenceText": "Total Amount: USD 85,000.00", "confidence": 0.97 },
+    { "fieldName": "currency", "originalValue": "USD", "pageNumber": 1, "evidenceText": "Total Amount: USD 85,000.00", "confidence": 0.97 },
+    { "fieldName": "incoterms", "originalValue": "CIF Tokyo", "pageNumber": 1, "evidenceText": "Trade Terms: CIF Tokyo, Incoterms 2020", "confidence": 0.95 },
+    { "fieldName": "containerNo", "originalValue": "TEMU1234567", "pageNumber": 1, "evidenceText": "Container No.: TEMU1234567", "confidence": 0.97 },
+    { "fieldName": "sealNo", "originalValue": "VN998877", "pageNumber": 1, "evidenceText": "Seal No.: VN998877", "confidence": 0.96 },
+    { "fieldName": "portOfLoading", "originalValue": "Ho Chi Minh City, Vietnam", "pageNumber": 1, "evidenceText": "Port of Loading: Ho Chi Minh City, Vietnam", "confidence": 0.96 },
+    { "fieldName": "portOfDischarge", "originalValue": "Tokyo, Japan", "pageNumber": 1, "evidenceText": "Port of Discharge: Tokyo, Japan", "confidence": 0.96 },
+    { "fieldName": "etd", "originalValue": "July 18, 2026", "pageNumber": 1, "evidenceText": "ETD: July 18, 2026", "confidence": 0.94 }
+  ]
+}

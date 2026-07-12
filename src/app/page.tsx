@@ -1,65 +1,84 @@
-import Image from "next/image";
+import Link from "next/link";
+import { getDashboardShipments } from "@/lib/queries";
+import { StatusBadge, UrgencyBadge } from "@/components/badges";
 
-export default function Home() {
+export const dynamic = "force-dynamic";
+
+export default async function DashboardPage() {
+  const shipments = await getDashboardShipments();
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+    <div className="space-y-4">
+      <div className="flex items-end justify-between">
+        <h1 className="text-xl font-bold">Shipment Dashboard</h1>
+        <p className="text-xs text-slate-500">
+          AIはバックグラウンドで整理・検証を行い、判断が必要な案件だけを提示します
+        </p>
+      </div>
+
+      <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white shadow-sm">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="border-b border-slate-200 bg-slate-50 text-left text-xs text-slate-500">
+              <th className="px-4 py-2">緊急度</th>
+              <th className="px-4 py-2">案件</th>
+              <th className="px-4 py-2">商品</th>
+              <th className="px-4 py-2">ETD / ETA</th>
+              <th className="px-4 py-2">状態</th>
+              <th className="px-4 py-2">書類</th>
+              <th className="px-4 py-2">問題</th>
+              <th className="px-4 py-2">承認待ち</th>
+            </tr>
+          </thead>
+          <tbody>
+            {shipments.map((s) => {
+              const received = s.requiredDocuments.filter((r) => r.status === "RECEIVED").length;
+              const openIssues = s.issues.length;
+              return (
+                <tr key={s.id} className="border-b border-slate-100 hover:bg-blue-50/40">
+                  <td className="px-4 py-3">
+                    <UrgencyBadge urgency={s.urgency} />
+                  </td>
+                  <td className="px-4 py-3">
+                    <Link href={`/shipments/${s.id}`} className="font-semibold text-blue-700 hover:underline">
+                      {s.id}
+                    </Link>
+                    <div className="text-xs text-slate-500">{s.route}</div>
+                  </td>
+                  <td className="px-4 py-3">{s.product}</td>
+                  <td className="px-4 py-3 text-xs tabular-nums text-slate-600">
+                    {s.etd ? `ETD ${s.etd.toISOString().slice(0, 10)}` : "—"}
+                    <br />
+                    {s.eta ? `ETA ${s.eta.toISOString().slice(0, 10)}` : "—"}
+                  </td>
+                  <td className="px-4 py-3">
+                    <StatusBadge status={s.status} />
+                  </td>
+                  <td className="px-4 py-3 text-xs tabular-nums">
+                    {s.requiredDocuments.length > 0
+                      ? `${received} / ${s.requiredDocuments.length}`
+                      : "—"}
+                  </td>
+                  <td className="px-4 py-3">
+                    {openIssues > 0 ? (
+                      <span className="font-semibold text-amber-700">⚠ {openIssues}件</span>
+                    ) : (
+                      <span className="text-emerald-700">✅ なし</span>
+                    )}
+                  </td>
+                  <td className="px-4 py-3">
+                    {s.approvalRequests.length > 0 ? (
+                      <span className="font-semibold text-blue-700">{s.approvalRequests.length}件</span>
+                    ) : (
+                      <span className="text-slate-400">—</span>
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

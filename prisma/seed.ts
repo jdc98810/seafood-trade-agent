@@ -56,6 +56,42 @@ async function main() {
     },
   });
 
+  // 実LLM抽出デモ用の第2案件（書類は sample-documents/VN-JP-002/ に一式あり）
+  await prisma.shipment.create({
+    data: {
+      id: "VN-JP-002",
+      route: "Vietnam → Japan",
+      product: "Frozen Pangasius Fillets",
+      scientificName: "Pangasius hypophthalmus",
+      purpose: "Sale",
+      transport: "Sea",
+      quantity: "1,250 cartons",
+      expectedNetWeight: "12,500 kg",
+      containerNo: "TCLU7654321",
+      etd: new Date("2026-07-20"),
+      eta: new Date("2026-07-27"),
+      transportCondition: "Frozen / -18°C",
+      status: "DOCUMENTS_RECEIVING",
+      urgency: "NORMAL",
+      requiredDocuments: {
+        create: REQUIRED_DOCUMENTS_VN_JP.map((r) => ({
+          documentType: r.documentType,
+          requirementReason: r.requirementReason,
+          status: "MISSING",
+          confidence: 0.9,
+        })),
+      },
+      events: {
+        create: {
+          fromState: null,
+          toState: "DOCUMENTS_RECEIVING",
+          actor: "agent",
+          reason: "案件作成。書類の受領待ち。",
+        },
+      },
+    },
+  });
+
   // ダッシュボード表示用のサブ案件（仕様書§6.1）
   await prisma.shipment.create({
     data: {
@@ -112,7 +148,7 @@ async function main() {
     },
   });
 
-  console.log("Seed完了: VN-JP-001 / TW-JP-003 / JP-VN-007");
+  console.log("Seed完了: VN-JP-001 / VN-JP-002 / TW-JP-003 / JP-VN-007");
 }
 
 main()

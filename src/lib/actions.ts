@@ -393,6 +393,127 @@ export async function archiveShipmentAction(shipmentId: string): Promise<void> {
   refresh(shipmentId);
 }
 
+// ---------- Gmail連携 ----------
+
+/** Gmailの添付PDFを案件に取り込み、抽出・検証パイプラインへ流す */
+export async function importGmailAttachmentAction(
+  shipmentId: string,
+  messageId: string,
+  attachmentId: string,
+  filename: string
+): Promise<{ ok: boolean; message: string }> {
+  try {
+    if (!filename.toLowerCase().endsWith(".pdf")) {
+      return { ok: false, message: "PDFの添付のみ取り込めます。" };
+    }
+    const { getAttachment } = await import("@/lib/google");
+    const buffer = await getAttachment(messageId, attachmentId);
+    if (buffer.length > MAX_UPLOAD_BYTES) {
+      return { ok: false, message: "ファイルサイズ上限(20MB)を超えています。" };
+    }
+    await recordEvent(shipmentId, "GMAIL_IMPORT", ACTOR, `Gmailから書類を取り込み: ${filename}`);
+    const r = await processDocumentUpload(shipmentId, filename, buffer);
+    refresh(shipmentId);
+    return { ok: true, message: `${filename} → ${r.documentType}（${r.fieldCount}項目抽出）` };
+  } catch (e) {
+    return { ok: false, message: e instanceof Error ? e.message : "取り込みに失敗しました。" };
+  }
+}
+
+/** AIによる草案の修正（指示例: 「もっと丁寧な英語に」「日本語に翻訳して」） */
+export async function refineDraftAction(
+  draftId: string,
+  instruction: string
+): Promise<{ ok: boolean; message: string; subject?: string; body?: string }> {
+  try {
+    const draft = await prisma.communicationDraft.findUniqueOrThrow({ where: { id: draftId } });
+    const { isDemoMode, completeJSON } = await import("@/lib/llm/provider");
+    if (isDemoMode()) {
+      return { ok: false, message: "デモモードではAI修正は使えません（.envでLLMを設定してください）。" };
+    }
+    const { z } = await import("zod");
+    const schema = z.object({ subject: z.string(), body: z.string() });
+    const refined = await completeJSON(
+      schema,
+      `You are a professional trade-operations assistant. Revise the given business email according to the user's instruction.
+Rules:
+- Keep ALL factual content (numbers, document names, values) EXACTLY unchanged unless the instruction explicitly says otherwise.
+- Do not add new claims or commitments.
+- Output JSON {"subject": "...", "body": "..."} only.`,
+      `Instruction: ${instruction}\n\n--- Current email ---\nSubject: ${draft.subject}\n\n${draft.body}`
+    );
+    await prisma.communicationDraft.update({
+      where: { id: draftId },
+      data: { subject: refined.subject, body: refined.body, status: "DRAFT" },
+    });
+    await recordEvent(
+      draft.shipmentId,
+      "DRAFT_REFINED",
+      ACTOR,
+      `AIに草案修正を指示: ${instruction}`
+    );
+    refresh(draft.shipmentId);
+    return { ok: true, message: "修正しました。", subject: refined.subject, body: refined.body };
+  } catch (e) {
+    return { ok: false, message: e instanceof Error ? e.message : "AI修正に失敗しました。" };
+  }
+}
+
+/** 手動編集した草案の保存 */
+export async function updateDraftAction(
+  draftId: string,
+  subject: string,
+  body: string
+): Promise<void> {
+  const draft = await prisma.communicationDraft.update({
+    where: { id: draftId },
+    data: { subject, body, status: "DRAFT" },
+  });
+  await recordEvent(draft.shipmentId, "DRAFT_EDITED", ACTOR, `草案を手動編集: ${subject}`);
+  refresh(draft.shipmentId);
+}
+
+/** Gmail経由で草案を送信する（人間の明示操作からのみ呼ばれる） */
+export async function sendDraftViaGmailAction(
+  draftId: string,
+  to: string,
+  subject: string,
+  body: string
+): Promise<{ ok: boolean; message: string }> {
+  try {
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(to.trim())) {
+      return { ok: false, message: "宛先メールアドレスが正しくありません。" };
+    }
+    const draft = await prisma.communicationDraft.findUniqueOrThrow({ where: { id: draftId } });
+    const { sendEmail } = await import("@/lib/google");
+    await sendEmail(to.trim(), subject, body);
+    await prisma.communicationDraft.update({
+      where: { id: draftId },
+      data: { subject, body, status: "SENT" },
+    });
+    await prisma.approvalRequest.updateMany({
+      where: { shipmentId: draft.shipmentId, approvalType: "COMMUNICATION_DRAFT", status: "PENDING" },
+      data: { status: "APPROVED", reviewedBy: ACTOR, reviewedAt: new Date() },
+    });
+    await recordEvent(
+      draft.shipmentId,
+      "EMAIL_SENT",
+      ACTOR,
+      `Gmailで送信: ${subject} → ${to.trim()}`
+    );
+    if (draft.recipientType === "SUPPLIER") {
+      const s = await prisma.shipment.findUniqueOrThrow({ where: { id: draft.shipmentId } });
+      if (s.status === "NEEDS_REVIEW") {
+        await transitionShipment(draft.shipmentId, "WAITING_FOR_SUPPLIER", ACTOR, "輸出者へ確認依頼を送信。回答待ち。");
+      }
+    }
+    refresh(draft.shipmentId);
+    return { ok: true, message: `${to.trim()} へ送信しました。` };
+  } catch (e) {
+    return { ok: false, message: e instanceof Error ? e.message : "送信に失敗しました。" };
+  }
+}
+
 /** 汎用の承認リクエスト処理（確認センター用） */
 export async function resolveApprovalAction(
   approvalId: string,

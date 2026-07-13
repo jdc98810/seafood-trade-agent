@@ -121,6 +121,16 @@ model CommunicationDraft {
   createdAt     DateTime @default(now())
 }
 
+// Gmail連携のOAuthトークン（MVP: 単一アカウント）
+model GoogleAccount {
+  id           String   @id @default("default")
+  email        String?
+  accessToken  String
+  refreshToken String?
+  expiresAt    DateTime
+  updatedAt    DateTime @updatedAt
+}
+
 // 状態遷移の監査ログ
 model WorkflowEvent {
   id         String   @id @default(cuid())

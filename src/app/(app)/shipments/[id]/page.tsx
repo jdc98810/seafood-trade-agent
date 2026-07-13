@@ -10,6 +10,7 @@ import {
   type IssueType,
 } from "@/lib/domain";
 import { ConfidenceBadge, SeverityBadge, StatusBadge, UrgencyBadge } from "@/components/badges";
+import { GmailPanel } from "@/components/gmail-panel";
 import { UploadForm } from "@/components/upload-form";
 import {
   AdvanceButton,
@@ -118,7 +119,16 @@ export default async function ShipmentDetailPage({
           {shipment.route} / {shipment.product}
           {shipment.eta ? ` / ETA ${shipment.eta.toISOString().slice(0, 10)}` : ""}
         </span>
-        <nav className="ml-auto flex gap-3 text-sm">
+        <nav className="ml-auto flex items-center gap-3 text-sm">
+          <GmailPanel
+            shipmentId={shipment.id}
+            drafts={shipment.drafts.map((d) => ({
+              id: d.id,
+              subject: d.subject,
+              body: d.body,
+              status: d.status,
+            }))}
+          />
           <Link href={`/shipments/${shipment.id}/compare`} className="text-blue-700 hover:underline">
             書類間比較 →
           </Link>

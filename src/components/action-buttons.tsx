@@ -11,6 +11,8 @@ import {
   archiveShipmentAction,
   arrangeDeliveryAction,
   correctFieldAction,
+  deleteDocumentAction,
+  resetShipmentAction,
   escalateIssueAction,
   generateSupplierEmailAction,
   markDeliveredAction,
@@ -179,6 +181,58 @@ export function ResumeButton({ shipmentId }: { shipmentId: string }) {
       onClick={() => startTransition(() => resumeFromEscalationAction(shipmentId))}
     >
       エスカレーション対応完了（確認へ戻す）
+    </button>
+  );
+}
+
+/** 受領書類の削除（有効版を消すと直前の版が有効に戻る） */
+export function DeleteDocumentButton({
+  documentId,
+  fileName,
+}: {
+  documentId: string;
+  fileName: string;
+}) {
+  const [pending, startTransition] = useTransition();
+  return (
+    <button
+      disabled={pending}
+      title="この書類を削除"
+      aria-label={`${fileName} を削除`}
+      className="text-slate-300 transition-colors hover:text-red-600 disabled:opacity-40"
+      onClick={() => {
+        if (
+          window.confirm(
+            `「${fileName}」を削除しますか？\n抽出値も削除され、再検証が実行されます。`
+          )
+        ) {
+          startTransition(() => deleteDocumentAction(documentId).then(() => {}));
+        }
+      }}
+    >
+      ✕
+    </button>
+  );
+}
+
+/** 案件リセット（書類・指摘・草案を全削除。監査ログは残る） */
+export function ResetShipmentButton({ shipmentId }: { shipmentId: string }) {
+  const [pending, startTransition] = useTransition();
+  return (
+    <button
+      disabled={pending}
+      className={`${btn} border border-red-300 bg-white text-red-700 hover:bg-red-50`}
+      onClick={() => {
+        if (
+          window.confirm(
+            `案件 ${shipmentId} をリセットしますか？\nすべての書類・抽出値・指摘・草案が削除され、書類受領前の状態に戻ります。\n（監査ログは保持されます。この操作は取り消せません）`
+          )
+        ) {
+          startTransition(() => resetShipmentAction(shipmentId));
+        }
+      }}
+    >
+      {pending ? "リセット中…" : "案件をリセット"}
     </button>
   );
 }

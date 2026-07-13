@@ -9,11 +9,17 @@ export default async function DashboardPage() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-end justify-between">
+      <div className="flex flex-wrap items-center gap-4">
         <h1 className="text-xl font-bold">Shipment Dashboard</h1>
         <p className="text-xs text-slate-500">
           AIはバックグラウンドで整理・検証を行い、判断が必要な案件だけを提示します
         </p>
+        <Link
+          href="/shipments/new"
+          className="ml-auto rounded bg-blue-700 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-600"
+        >
+          ＋ 新規案件
+        </Link>
       </div>
 
       <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white shadow-sm">

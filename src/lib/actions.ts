@@ -8,7 +8,7 @@ import { prisma } from "@/lib/db";
 import { processDocumentUpload, revalidateShipment } from "@/lib/workflow/pipeline";
 import { transitionShipment, recordEvent } from "@/lib/workflow/service";
 import { generateSupplierEmail, type IssueForDraft } from "@/lib/agents/action";
-import type { IssueType, SourceValue } from "@/lib/domain";
+import { REQUIRED_DOCUMENTS_VN_JP, type IssueType, type SourceValue } from "@/lib/domain";
 
 const ACTOR = "担当者"; // MVP: 認証なしの単一ユーザー
 
@@ -44,6 +44,140 @@ export async function uploadDocumentAction(
   } catch (e) {
     return { ok: false, message: e instanceof Error ? e.message : "アップロードに失敗しました。" };
   }
+}
+
+export interface NewShipmentInput {
+  id: string;
+  exportCountry: string;
+  importCountry: string;
+  product: string;
+  scientificName?: string;
+  quantity?: string;
+  expectedNetWeight?: string;
+  etd?: string;
+  eta?: string;
+  urgency: string;
+}
+
+/** 新規案件の作成。必要書類はVN→JP水産物ルートの標準セットを適用する（MVP）。 */
+export async function createShipmentAction(
+  input: NewShipmentInput
+): Promise<{ ok: boolean; message: string }> {
+  const id = input.id.trim().toUpperCase();
+  if (!id) return { ok: false, message: "案件IDを入力してください。" };
+  if (!/^[A-Z0-9][A-Z0-9-]{2,29}$/.test(id)) {
+    return { ok: false, message: "案件IDは英数字とハイフンで入力してください（例: VN-JP-003）。" };
+  }
+  if (!input.product.trim()) return { ok: false, message: "商品名を入力してください。" };
+  if (!input.exportCountry.trim() || !input.importCountry.trim()) {
+    return { ok: false, message: "輸出国と輸入国を入力してください。" };
+  }
+  const existing = await prisma.shipment.findUnique({ where: { id } });
+  if (existing) return { ok: false, message: `案件ID「${id}」は既に存在します。` };
+
+  const etd = input.etd ? new Date(input.etd) : null;
+  const eta = input.eta ? new Date(input.eta) : null;
+  if (etd && eta && etd >= eta) {
+    return { ok: false, message: "ETAはETDより後の日付にしてください。" };
+  }
+
+  await prisma.shipment.create({
+    data: {
+      id,
+      route: `${input.exportCountry.trim()} → ${input.importCountry.trim()}`,
+      product: input.product.trim(),
+      scientificName: input.scientificName?.trim() || null,
+      quantity: input.quantity?.trim() || null,
+      expectedNetWeight: input.expectedNetWeight?.trim() || null,
+      etd,
+      eta,
+      purpose: "Sale",
+      transport: "Sea",
+      status: "DOCUMENTS_RECEIVING",
+      urgency: ["HIGH", "NORMAL", "LOW"].includes(input.urgency) ? input.urgency : "NORMAL",
+      requiredDocuments: {
+        create: REQUIRED_DOCUMENTS_VN_JP.map((r) => ({
+          documentType: r.documentType,
+          requirementReason: r.requirementReason,
+          status: "MISSING",
+        })),
+      },
+      events: {
+        create: {
+          fromState: null,
+          toState: "DOCUMENTS_RECEIVING",
+          actor: ACTOR,
+          reason: "案件を作成しました。書類の受領待ち。",
+        },
+      },
+    },
+  });
+  revalidatePath("/");
+  revalidatePath("/dashboard");
+  return { ok: true, message: id };
+}
+
+/** 書類の削除。有効版を消した場合は直前の版を有効に戻し、再検証する。 */
+export async function deleteDocumentAction(
+  documentId: string
+): Promise<{ ok: boolean; message: string }> {
+  const doc = await prisma.tradeDocument.findUnique({ where: { id: documentId } });
+  if (!doc) return { ok: false, message: "書類が見つかりません。" };
+
+  await prisma.extractedField.deleteMany({ where: { documentId } });
+  await prisma.tradeDocument.delete({ where: { id: documentId } });
+
+  // 有効版を消した場合、残っている最新版を有効に戻す
+  if (doc.isActive) {
+    const prev = await prisma.tradeDocument.findFirst({
+      where: { shipmentId: doc.shipmentId, documentType: doc.documentType },
+      orderBy: { version: "desc" },
+    });
+    if (prev) {
+      await prisma.tradeDocument.update({ where: { id: prev.id }, data: { isActive: true } });
+    } else {
+      // 同種の書類が無くなった → チェックリストを未受領に戻す
+      await prisma.requiredDocument.updateMany({
+        where: { shipmentId: doc.shipmentId, documentType: doc.documentType },
+        data: { status: "MISSING" },
+      });
+    }
+  }
+
+  await recordEvent(doc.shipmentId, "DOCUMENT_DELETED", ACTOR, `書類を削除: ${doc.fileName}（v${doc.version}）`);
+  await revalidateShipment(doc.shipmentId, ACTOR);
+  refresh(doc.shipmentId);
+  return { ok: true, message: `${doc.fileName} を削除しました。` };
+}
+
+/**
+ * 案件のリセット: 書類・抽出値・指摘・草案・承認を削除し、書類受領前の状態に戻す。
+ * 監査ログ（WorkflowEvent）は削除しない。
+ */
+export async function resetShipmentAction(shipmentId: string): Promise<void> {
+  const shipment = await prisma.shipment.findUniqueOrThrow({ where: { id: shipmentId } });
+  await prisma.$transaction([
+    prisma.extractedField.deleteMany({ where: { document: { shipmentId } } }),
+    prisma.tradeDocument.deleteMany({ where: { shipmentId } }),
+    prisma.validationIssue.deleteMany({ where: { shipmentId } }),
+    prisma.communicationDraft.deleteMany({ where: { shipmentId } }),
+    prisma.approvalRequest.deleteMany({ where: { shipmentId } }),
+    prisma.requiredDocument.updateMany({
+      where: { shipmentId },
+      data: { status: "MISSING", humanConfirmed: false },
+    }),
+    prisma.shipment.update({ where: { id: shipmentId }, data: { status: "DOCUMENTS_RECEIVING" } }),
+    prisma.workflowEvent.create({
+      data: {
+        shipmentId,
+        fromState: shipment.status,
+        toState: "DOCUMENTS_RECEIVING",
+        actor: ACTOR,
+        reason: "案件をリセットしました（書類・指摘・草案を削除。監査ログは保持）。",
+      },
+    }),
+  ]);
+  refresh(shipmentId);
 }
 
 export async function correctFieldAction(fieldId: string, newValue: string): Promise<void> {

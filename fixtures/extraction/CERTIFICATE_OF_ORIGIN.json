@@ -1,0 +1,13 @@
+{
+  "documentType": "CERTIFICATE_OF_ORIGIN",
+  "fields": [
+    { "fieldName": "certificateNo", "originalValue": "VN-CO-2026-11223", "pageNumber": 1, "evidenceText": "Reference No.: VN-CO-2026-11223", "confidence": 0.97 },
+    { "fieldName": "productName", "originalValue": "Frozen Vannamei Shrimp", "pageNumber": 1, "evidenceText": "Description: Frozen Vannamei Shrimp", "confidence": 0.96 },
+    { "fieldName": "originCountry", "originalValue": "Vietnam", "pageNumber": 1, "evidenceText": "Country of Origin: Vietnam", "confidence": 0.98 },
+    { "fieldName": "exporter", "originalValue": "ABC Seafood Co., Ltd.", "pageNumber": 1, "evidenceText": "Exporter: ABC Seafood Co., Ltd.", "confidence": 0.96 },
+    { "fieldName": "importer", "originalValue": "Nihon Suisan Trading K.K.", "pageNumber": 1, "evidenceText": "Importer: Nihon Suisan Trading K.K.", "confidence": 0.96 },
+    { "fieldName": "quantity", "originalValue": "500 cartons", "pageNumber": 1, "evidenceText": "Quantity: 500 cartons", "confidence": 0.95 },
+    { "fieldName": "netWeightKg", "originalValue": "10,000 kg", "pageNumber": 1, "evidenceText": "Net Weight: 10,000 kg", "confidence": 0.95 },
+    { "fieldName": "invoiceNo", "originalValue": "ABC-INV-2026-0712", "pageNumber": 1, "evidenceText": "Invoice No. & Date: ABC-INV-2026-0712, July 10, 2026", "confidence": 0.95 }
+  ]
+}

@@ -14,11 +14,13 @@ import { UploadForm } from "@/components/upload-form";
 import {
   AdvanceButton,
   ApproveQuarantineButton,
+  DeleteDocumentButton,
   DraftActions,
   FieldActions,
   GenerateEmailButton,
   IssueActions,
   ProceedToQuarantineButton,
+  ResetShipmentButton,
   ResumeButton,
 } from "@/components/action-buttons";
 
@@ -210,8 +212,11 @@ export default async function ShipmentDetailPage({
                     d.isActive ? "border-slate-200" : "border-slate-100 bg-slate-50 opacity-60"
                   }`}
                 >
-                  <div className="font-semibold">
-                    {DOCUMENT_TYPE_LABELS[d.documentType as DocumentType] ?? d.documentType}
+                  <div className="flex items-start justify-between gap-2">
+                    <span className="font-semibold">
+                      {DOCUMENT_TYPE_LABELS[d.documentType as DocumentType] ?? d.documentType}
+                    </span>
+                    <DeleteDocumentButton documentId={d.id} fileName={d.fileName} />
                   </div>
                   <div className="truncate text-slate-500" title={d.fileName}>
                     {d.fileName}
@@ -228,6 +233,14 @@ export default async function ShipmentDetailPage({
                 <li className="text-xs text-slate-400">まだ書類がありません</li>
               )}
             </ul>
+          </div>
+
+          <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+            <h2 className="mb-2 text-sm font-bold text-slate-500">案件の管理</h2>
+            <ResetShipmentButton shipmentId={shipment.id} />
+            <p className="mt-2 text-[11px] leading-relaxed text-slate-400">
+              書類・指摘・草案をすべて削除し、書類受領前の状態に戻します。監査ログは保持されます。
+            </p>
           </div>
         </section>
 

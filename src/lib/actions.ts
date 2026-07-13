@@ -46,21 +46,6 @@ export async function uploadDocumentAction(
   }
 }
 
-export async function confirmFieldAction(fieldId: string): Promise<void> {
-  const field = await prisma.extractedField.update({
-    where: { id: fieldId },
-    data: { reviewStatus: "CONFIRMED" },
-    include: { document: true },
-  });
-  await recordEvent(
-    field.document.shipmentId,
-    "FIELD_CONFIRMED",
-    ACTOR,
-    `${field.fieldName} の抽出値「${field.originalValue}」を確認済みにしました`
-  );
-  refresh(field.document.shipmentId);
-}
-
 export async function correctFieldAction(fieldId: string, newValue: string): Promise<void> {
   const before = await prisma.extractedField.findUniqueOrThrow({
     where: { id: fieldId },

@@ -10,7 +10,6 @@ import {
   approveQuarantinePackageAction,
   archiveShipmentAction,
   arrangeDeliveryAction,
-  confirmFieldAction,
   correctFieldAction,
   escalateIssueAction,
   generateSupplierEmailAction,
@@ -24,30 +23,22 @@ import {
 const btn =
   "rounded px-2 py-1 text-xs font-medium disabled:opacity-50 transition-colors cursor-pointer whitespace-nowrap";
 
+// 修正が必要な可能性のあるフィールドにのみ表示する（問題関連・低信頼度）
 export function FieldActions({ fieldId, current }: { fieldId: string; current: string | null }) {
   const [pending, startTransition] = useTransition();
   return (
-    <span className="inline-flex gap-1">
-      <button
-        disabled={pending}
-        className={`${btn} bg-emerald-700 text-white hover:bg-emerald-600`}
-        onClick={() => startTransition(() => confirmFieldAction(fieldId))}
-      >
-        確認
-      </button>
-      <button
-        disabled={pending}
-        className={`${btn} bg-slate-200 text-slate-800 hover:bg-slate-300`}
-        onClick={() => {
-          const v = window.prompt("修正後の値を入力してください:", current ?? "");
-          if (v != null && v.trim() !== "") {
-            startTransition(() => correctFieldAction(fieldId, v.trim()));
-          }
-        }}
-      >
-        修正
-      </button>
-    </span>
+    <button
+      disabled={pending}
+      className={`${btn} bg-slate-200 text-slate-800 hover:bg-slate-300`}
+      onClick={() => {
+        const v = window.prompt("修正後の値を入力してください:", current ?? "");
+        if (v != null && v.trim() !== "") {
+          startTransition(() => correctFieldAction(fieldId, v.trim()));
+        }
+      }}
+    >
+      修正
+    </button>
   );
 }
 

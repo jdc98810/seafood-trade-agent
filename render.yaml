@@ -1,0 +1,14 @@
+# Render.com Blueprint — リポジトリ接続後、自動でこの構成が使われる
+services:
+  - type: web
+    name: seafood-trade-agent
+    runtime: docker
+    plan: free
+    autoDeploy: true
+    envVars:
+      - key: DEMO_MODE
+        value: "true"
+      # 実LLMを使う場合は Render ダッシュボードで以下を設定して DEMO_MODE=false に変更
+      # - key: LLM_BASE_URL
+      # - key: LLM_API_KEY   (Secret として設定)
+      # - key: LLM_MODEL
